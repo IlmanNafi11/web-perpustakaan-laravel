@@ -65,6 +65,8 @@ class AdminPanelProvider extends PanelProvider
                 'profile' => MenuItem::make()
                     ->icon('heroicon-o-user')
                     ->label('My Profile'),
-            ]);
+            ])
+            ->brandName('Perpusdig')
+            ->favicon(asset('storage/images/logos.svg'));
     }
 }
