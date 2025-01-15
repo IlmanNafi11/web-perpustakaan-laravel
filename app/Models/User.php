@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'phone',
+        'address',
+        'photo_path',
     ];
 
     /**
@@ -50,4 +54,15 @@ class User extends Authenticatable
     {
         return $this->hasOne(Member::class);
     }
+
+    protected static function booted()
+{
+    static::creating(function ($user) {
+        $user->role = $user->role ?? 'admin';
+    });
+
+    static::updating(function ($user) {
+        
+    });
+}
 }
