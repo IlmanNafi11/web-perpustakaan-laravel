@@ -28,10 +28,11 @@ use Illuminate\Database\Eloquent\Model;
 class BookResource extends Resource
 {
     protected static ?string $model = Book::class;
-    protected static ?string $label = 'Library Collection';
-    protected static ?string $navigationLabel = 'Library Collections';
+    protected static ?string $label = 'Books and E-Books';
+    protected static ?string $navigationLabel = 'Books and E-Books';
     protected static ?string $navigationIcon = 'heroicon-s-book-open';
 
+    protected static ?string $navigationGroup = 'Library Collection';
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist
