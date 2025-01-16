@@ -16,5 +16,10 @@ class Member extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-}
+    }
+
+    public function borrowRequests()
+    {
+        return $this->hasMany(BorrowRequest::class);
+    }
 }
