@@ -25,4 +25,9 @@ class Book extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function borrowRequests()
+    {
+        return $this->hasMany(BorrowRequest::class);
+    }
 }
