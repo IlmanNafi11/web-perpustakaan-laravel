@@ -4,86 +4,104 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BookResource\Pages;
 use App\Filament\Resources\BookResource\RelationManagers;
-use App\Http\Controllers\CategoryController;
 use App\Models\Book;
 use App\Models\category;
+use App\Rules\BookRule;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Relationship;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Notifications\Notification;
+use Filament\Infolists\Infolist;
+use Filament\Infolists;
+use Filament\Resources\Pages\Page;
+use Illuminate\Database\Eloquent\Model;
+
 
 class BookResource extends Resource
 {
     protected static ?string $model = Book::class;
-    protected static ?string $label = 'Books and E-books';
-    protected static ?string $navigationLabel = 'Books and E-books';
+    protected static ?string $label = 'Library Collection';
+    protected static ?string $navigationLabel = 'Library Collections';
     protected static ?string $navigationIcon = 'heroicon-s-book-open';
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Group::make([
+                    Infolists\Components\ImageEntry::make('cover')
+                        ->label('Book Cover')
+                        ->extraAttributes([
+                            'alt' => 'book-cover',
+                            'loading' => 'lazy',
+                        ])
+                        ->height(300),
+                ]),
+                Infolists\Components\Group::make([
+                    Infolists\Components\TextEntry::make('title'),
+                    Infolists\Components\TextEntry::make('author'),
+                    Infolists\Components\TextEntry::make('isbn'),
+                    Infolists\Components\TextEntry::make('quantity'),
+                    Infolists\Components\TextEntry::make('available'),
+                    Infolists\Components\TextEntry::make('year'),
+                    Infolists\Components\TextEntry::make('category.category_name'),
+                    Infolists\Components\TextEntry::make('type'),
+                    Infolists\Components\TextEntry::make('language'),
+                    Infolists\Components\TextEntry::make('publisher'),
+                    Infolists\Components\TextEntry::make('description')
+                        ->columnSpanFull(),
+                ])
+                    ->columns(2),
+            ]);
+    }
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
-                    ->required()
                     ->maxLength(255)
-                    ->label('Title'),
+                    ->label('Title')
+                    ->rule([
+                        new BookRule,
+                        'required',
+                    ])
+                    ->validationMessages([
+                        'required' => 'Title is required',
+                        'max' => 'Title is too long',
+                    ])
+                    ->placeholder('Enter book title'),
                 Forms\Components\TextInput::make('author')
-                    ->required()
                     ->maxLength(255)
-                    ->label('Author'),
+                    ->label('Author')
+                    ->rule([
+                        new BookRule,
+                        'required',
+                    ])
+                    ->validationMessages([
+                        'required' => 'Author is required',
+                        'max' => 'Author is too long',
+                    ])
+                    ->placeholder('Enter book author'),
                 Forms\Components\TextInput::make('isbn')
-                    ->required()
                     ->numeric()
                     ->label('ISBN')
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('cover')
-                    ->required()
-                    ->image()
-                    ->directory('book-cover')
-                    ->maxSize(2048)
-                    ->maxFiles(1)
-                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png'])
-                    ->label('Book Cover'),
-                Forms\Components\Textarea::make('description')
-                    ->required()
-                    ->columnSpanFull()
-                    ->label('Description'),
-                Fieldset::make('Stock')
-                    ->schema([
-                        Forms\Components\TextInput::make('quantity')
-                            ->required()
-                            ->numeric()
-                            ->default(0)
-                            ->label('Quantity')
-                            ->gt('available')
-                            ->validationMessages([
-                                'gt' => 'Quantity must be greater than available',
-                            ]),
-                        Forms\Components\TextInput::make('available')
-                            ->required()
-                            ->numeric()
-                            ->default(0)
-                            ->label('Available'),
-                    ]),
-                Forms\Components\Select::make('year')
-                    ->required()
-                    ->options(
-                        collect(range(date('Y'), 1900))->mapWithKeys(fn($year) => [$year => $year])->toArray()
-                    )
-                    ->searchable()
-                    ->label('Publication Year'),
-                Forms\Components\TextInput::make('publisher')
-                    ->required()
-                    ->maxLength(255)
-                    ->alpha()
-                    ->label('Publisher'),
+                    ->rule([
+                        'required',
+                        'regex:/^\d{13}$/',
+                    ])
+                    ->validationMessages([
+                        'required' => 'ISBN is required',
+                        'regex' => 'The input must be exactly 13 digits.',
+                    ])
+                    ->placeholder('Enter book ISBN'),
                 Forms\Components\Select::make('language')
                     ->options([
                         'english' => 'English',
@@ -92,10 +110,72 @@ class BookResource extends Resource
                         'korea' => 'Korea',
                     ])
                     ->searchable()
-                    ->required()
-                    ->label('Language'),
+                    ->rule([
+                        'required',
+                    ])
+                    ->label('Language')
+                    ->placeholder('Select book language'),
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull()
+                    ->label('Description')
+                    ->rule([
+                        'required',
+                    ])
+                    ->validationMessages([
+                        'required' => 'Description is required',
+                    ])
+                    ->placeholder('Enter book description'),
+                Fieldset::make('Stock')
+                    ->schema([
+                        Forms\Components\TextInput::make('quantity')
+                            ->numeric()
+                            ->default(0)
+                            ->label('Quantity')
+                            ->gte('available')
+                            ->rule([
+                                'required',
+                            ])
+                            ->validationMessages([
+                                'required' => 'Quantity is required',
+                                'gte' => 'Quantity must be greater than available',
+                            ])
+                            ->placeholder('Enter book quantity'),
+                        Forms\Components\TextInput::make('available')
+                            ->numeric()
+                            ->default(0)
+                            ->label('Available')
+                            ->lte('quantity')
+                            ->rule([
+                                'required',
+                            ])
+                            ->validationMessages([
+                                'required' => 'Available is required',
+                                'lte' => 'Available must be less than quantity',
+                            ])
+                            ->placeholder('Enter book available'),
+                    ]),
+                Forms\Components\Select::make('year')
+                    ->options(
+                        collect(range(date('Y'), 1900))->mapWithKeys(fn($year) => [$year => $year])->toArray()
+                    )
+                    ->rule([
+                        'required',
+                    ])
+                    ->searchable()
+                    ->label('Publication Year')
+                    ->placeholder('Select publication year'),
+                Forms\Components\TextInput::make('publisher')
+                    ->maxLength(255)
+                    ->label('Publisher')
+                    ->rule([
+                        'required',
+                        new BookRule
+                    ])
+                    ->validationMessages([
+                        'required' => 'Publisher is required',
+                    ])
+                    ->placeholder('Enter book publisher'),
                 Forms\Components\Select::make('category_id')
-                    ->required()
                     ->searchable()
                     ->relationship('category', 'category_name')
                     ->createOptionForm([
@@ -103,15 +183,37 @@ class BookResource extends Resource
                             ->required()
                             ->maxLength(255),
                     ])
+                    ->rule([
+                        'required',
+                    ])
                     ->options(category::all()->pluck('category_name', 'id'))
-                    ->label('Category'),
+                    ->label('Category')
+                    ->placeholder('Select book category'),
                 Forms\Components\Radio::make('type')
-                    ->required()
                     ->options([
                         'e-book' => 'E Book',
                         'phisical book' => 'Phisical Book',
                     ])
-                    ->label('Type'),
+                    ->rule([
+                        'required',
+                    ])
+                    ->label('Type')
+                    ->helperText('Select book type.'),
+                Forms\Components\FileUpload::make('cover')
+                    ->image()
+                    ->directory('book-cover')
+                    ->maxSize(2048)
+                    ->maxFiles(1)
+                    ->label('Book Cover')
+                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png'])
+                    ->rule([
+                        'required',
+                    ])
+                    ->validationMessages([
+                        'required' => 'Book cover is required',
+                        'max' => 'Book cover is too large',
+                    ])
+                    ->helperText('Upload a book cover image in png, jpg or jpeg format.'),
             ]);
     }
 
@@ -146,14 +248,6 @@ class BookResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters(filters: [
                 SelectFilter::make('author')
@@ -172,13 +266,31 @@ class BookResource extends Resource
                     ->label('Category'),
 
             ])
+            ->deferLoading()
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\EditAction::make()
+                    ->color('primary'),
+                    Tables\Actions\DeleteAction::make()
+                        ->successNotification(
+                            Notification::make()
+                                ->success()
+                                ->title('Book deleted')
+                                ->body('The book has been deleted successfully.'),
+                        )
+                        ->modalHeading('Delete Book')
+                        ->modalDescription('Are you sure you want to delete this book?'),
+                    Tables\Actions\ViewAction::make(),
+                ])
+                    ->label('More Actions')
+                    ->color('primary')
+                    ->button(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Delete Book')
+                        ->modalDescription('Are you sure you want to delete this book?'),
                 ]),
             ]);
     }
@@ -197,5 +309,12 @@ class BookResource extends Resource
             'create' => Pages\CreateBook::route('/create'),
             'edit' => Pages\EditBook::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRecordSubNavigation(Page $page): array
+    {
+        return $page->generateNavigationItems([
+            // ...
+        ]);
     }
 }
