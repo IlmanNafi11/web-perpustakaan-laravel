@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->foreignId('borrow_request_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->date('borrow_date');
-            $table->date('return_date')->nullable();
+            $table->date('borrow_at');
+            $table->date('return_at')->nullable();
             $table->date('due_date');
+            $table->string('status')->default('borrowed');
         });
     }
 
