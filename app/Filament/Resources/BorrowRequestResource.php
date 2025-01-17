@@ -34,7 +34,7 @@ class BorrowRequestResource extends Resource
     protected static ?string $model = BorrowRequest::class;
 
     protected static ?string $navigationIcon = 'eos-assignment-returned-o';
-    protected static ?string $navigationGroup = 'Transcation';
+    protected static ?string $navigationGroup = 'Transaction';
 
     public static function form(Form $form): Form
     {
