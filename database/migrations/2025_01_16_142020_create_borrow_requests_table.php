@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('quantity')->default(1);
             $table->timestamp('request_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('processed_at')->nullable();
+            $table->boolean('is_taken')->default(false);
         });
     }
 
