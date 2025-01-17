@@ -11,8 +11,9 @@ class BorrowRecord extends Model
     protected $fillable = [
         "borrow_request_id",
         "borrow_date",
-        "return_date",
         "due_date",
+        "return_at",
+        "status",
     ];
 
     public function borrowRequest()
