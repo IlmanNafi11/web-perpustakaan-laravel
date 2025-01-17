@@ -25,6 +25,7 @@ use Filament\Infolists;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Blade;
 
 class BorrowRequestResource extends Resource
 {
@@ -171,25 +172,41 @@ class BorrowRequestResource extends Resource
                 ]),
                 Group::make([
                     TextEntry::make('member.user.name')
-                    ->label('Member Name'),
+                        ->label('Member Name'),
                     TextEntry::make('book.title')
-                    ->label('Book Title'),
+                        ->label('Book Title'),
                     TextEntry::make('member.user.email')
-                    ->label('Member Email'),
+                        ->label('Member Email'),
                     TextEntry::make('member.user.phone')
-                    ->label('Member Phone'),
+                        ->label('Member Phone'),
                     TextEntry::make('status')
-                    ->label('Status')
-                    ->color(fn(string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'approved' => 'success',
-                        'rejected' => 'danger',
-                    })
-                    ->badge(),
+                        ->label('Request status')
+                        ->color(fn(string $state): string => match ($state) {
+                            'pending' => 'warning',
+                            'approved' => 'success',
+                            'rejected' => 'danger',
+                        })
+                        ->icon(fn(string $state): string => match ($state) {
+                            'pending' => 'heroicon-o-clock',
+                            'approved' => 'heroicon-o-check-circle',
+                            'rejected' => 'heroicon-o-x-circle',
+                        })
+                        ->badge(),
+                    TextEntry::make('is_taken')
+                        ->label('Taken Status')
+                        ->color(fn($state) => $state === 'Has been taken' ? 'success' : 'warning')
+                        ->badge()
+                        ->icon(fn($state) => $state === 'Has been taken' ? 'heroicon-o-check-circle' : 'heroicon-o-clock')
+                        ->state(function ($record) {
+                            return $record->is_taken === 1 ? 'Has been taken' : 'Not taken yet';
+                        })
+                        ->visible(function ($record) {
+                            return $record->status === 'approved' ? true : false;
+                        }),
                     TextEntry::make('quantity')
-                    ->label('Quantity'),
+                        ->label('Quantity'),
                     TextEntry::make('request_at')
-                    ->label('Request At'),
+                        ->label('Request At'),
                 ])->columns(2),
             ]);
     }
