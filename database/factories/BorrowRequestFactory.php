@@ -18,12 +18,16 @@ class BorrowRequestFactory extends Factory
      */
     public function definition(): array
     {
+        $status = $this->faker->randomElement(['pending', 'approved', 'rejected']);
+        $processed_at = $status === 'approved' || $status === 'rejected' ? now() : null;
         return [
             "member_id"=> Member::inRandomOrder()->first()->id,
             "book_id"=> Book::inRandomOrder()->first()->id,
-            'status' => $this->faker->randomElement(['pending', 'approved', 'rejected']),
+            'status' => $status,
             'quantity' => $this->faker->numberBetween(1, 5),
             'request_at' => now(),
+            'processed_at'=> $processed_at,
+            'is_taken' => $status === 'approved' ? true : false,
         ];
     }
 }
