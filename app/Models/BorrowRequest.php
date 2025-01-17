@@ -33,4 +33,9 @@ class BorrowRequest extends Model
     {
         return $this->belongsTo(Book::class);
     }
+
+    public function borrowRecord()
+    {
+        return $this->hasOne(BorrowRecord::class);
+    }
 }
