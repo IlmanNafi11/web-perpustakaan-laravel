@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BorrowRequestResource\Pages;
 use App\Filament\Resources\BorrowRequestResource\RelationManagers;
+use App\Filament\Resources\BorrowRequestResource\Widgets\StatsOverview;
 use App\Models\BorrowRecord;
 use App\Models\BorrowRequest;
 use Carbon\Carbon;
@@ -23,11 +24,9 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup as ActionsActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Infolists;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
-use Illuminate\Support\Facades\Blade;
 
 class BorrowRequestResource extends Resource
 {
@@ -138,43 +137,43 @@ class BorrowRequestResource extends Resource
                     DeleteAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Action::make('TakenStatus')
-                    ->form([
-                        DatePicker::make('borrow_at')
-                            ->label('Borrow at')
-                            ->afterOrEqual('now')
-                            ->rules([
-                                'required'
-                            ]),
-                        DatePicker::make('return_at')
-                            ->label('Return at')
-                            ->afterOrEqual('borrow_at')
-                            ->rules([
-                                'required'
-                            ]),
-                    ])
-                    ->action(function (array $data, BorrowRequest $record) {
-                        $borrowRequest = $record;
+                        ->form([
+                            DatePicker::make('borrow_at')
+                                ->label('Borrow at')
+                                ->afterOrEqual('now')
+                                ->rules([
+                                    'required'
+                                ]),
+                            DatePicker::make('return_at')
+                                ->label('Return at')
+                                ->afterOrEqual('borrow_at')
+                                ->rules([
+                                    'required'
+                                ]),
+                        ])
+                        ->action(function (array $data, BorrowRequest $record) {
+                            $borrowRequest = $record;
 
-                        $borrowRequest->is_taken = true;
-                        $borrowRequest->save();
+                            $borrowRequest->is_taken = true;
+                            $borrowRequest->save();
 
-                        $borrowRecord = new BorrowRecord();
-                        $borrowRecord->borrow_request_id = $borrowRequest->id;
-                        $borrowRecord->borrow_at = $data['borrow_at'];
-                        $return_at = $data['return_at'];
-                        $borrowRecord->return_at = $return_at;
-                        $borrowRecord->due_date = Carbon::parse($return_at)->addDays(3);
-                        $borrowRecord->save();
+                            $borrowRecord = new BorrowRecord();
+                            $borrowRecord->borrow_request_id = $borrowRequest->id;
+                            $borrowRecord->borrow_at = $data['borrow_at'];
+                            $return_at = $data['return_at'];
+                            $borrowRecord->return_at = $return_at;
+                            $borrowRecord->due_date = Carbon::parse($return_at)->addDays(3);
+                            $borrowRecord->save();
 
-                        Notification::make()
+                            Notification::make()
                                 ->title('Success')
                                 ->success()
                                 ->body('Book pickup status updated.')
                                 ->send();
-                    })
-                    ->label('Update pickup status')
-                    ->icon('elemplus-takeaway-box')
-                    ->visible(fn($record) => $record->status === 'approved')
+                        })
+                        ->label('Update pickup status')
+                        ->icon('elemplus-takeaway-box')
+                        ->visible(fn($record) => $record->status === 'approved')
                 ])
                     ->button()
                     ->label('More Actions')
