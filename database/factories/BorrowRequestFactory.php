@@ -20,12 +20,11 @@ class BorrowRequestFactory extends Factory
     {
         $status = $this->faker->randomElement(['pending', 'approved', 'rejected']);
         $processed_at = $status === 'approved' || $status === 'rejected' ? now() : null;
+        $request_at = $this->faker->dateTimeThisMonth();
         return [
             "member_id"=> Member::inRandomOrder()->first()->id,
-            "book_id"=> Book::inRandomOrder()->first()->id,
             'status' => $status,
-            'quantity' => $this->faker->numberBetween(1, 5),
-            'request_at' => now(),
+            'request_at' => $request_at,
             'processed_at'=> $processed_at,
             'is_taken' => $status === 'approved' ? true : false,
         ];
