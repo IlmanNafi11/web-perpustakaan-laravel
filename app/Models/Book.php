@@ -26,8 +26,8 @@ class Book extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function borrowRequests()
+    public function borrowRequestBooks()
     {
-        return $this->hasMany(BorrowRequest::class);
+        return $this->hasMany(BorrowRequestBooks::class);
     }
 }

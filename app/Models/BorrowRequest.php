@@ -10,9 +10,7 @@ class BorrowRequest extends Model
     use HasFactory;
     protected $fillable = [
         "member_id",
-        "book_id",
         "status",
-        "quantity",
         "request_at",
         "processed_at",
     ];
@@ -29,13 +27,18 @@ class BorrowRequest extends Model
         return $this->belongsTo(Member::class);
     }
 
-    public function book()
+    public function borrowRequestBooks()
     {
-        return $this->belongsTo(Book::class);
+        return $this->hasMany(related: BorrowRequestBooks::class);
     }
 
     public function borrowRecord()
     {
         return $this->hasOne(BorrowRecord::class);
+    }
+
+    public function books()
+    {
+        return $this->hasManyThrough(Book::class, BorrowRequestBooks::class, 'borrow_request_id', 'id', 'id', 'book_id');
     }
 }

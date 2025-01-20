@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BorrowRequestBooks extends Model
 {
+    use HasFactory;
     protected $fillable = ['borrow_request_id', 'book_id'];
 
     public function book()
