@@ -15,10 +15,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BorrowRecordResource\Pages;
 use App\Filament\Resources\BorrowRecordResource\RelationManagers;
+use App\Models\Book;
+use App\Models\BorrowRequestBooks;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Infolists;
 use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Infolist;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -52,10 +56,16 @@ class BorrowRecordResource extends Resource
                     ->label('Member Email')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('borrowRequest.book.title')
+                TextColumn::make('title')
                     ->label('Book Title')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->state(function($record) {
+                        $borrowId = $record->borrow_request_id;
+                        return BorrowRequestBooks::where('borrow_request_id', $borrowId)->pluck('book_id')->flatMap(function($book) {
+                            return Book::where('id', $book)->pluck('title')->toArray();
+                        });
+                    }),
                 TextColumn::make('borrow_at')
                     ->label('Borrow at')
                     ->sortable(),
@@ -88,7 +98,11 @@ class BorrowRecordResource extends Resource
                     Action::make('return_at')
                         ->label('Return Book')
                         ->color('success')
-                        ->visible(fn($record) => $record->return_at === null ? true : false)
+                        ->visible(function ($record) {
+                            if ($record->status === 'borrowed' || $record->status === 'overdue') {
+                                return true;
+                            }
+                        })
                         ->icon('heroicon-o-check-circle')
                         ->requiresConfirmation()
                         ->modalHeading('Confirmation')
@@ -142,7 +156,7 @@ class BorrowRecordResource extends Resource
                                         ->width(200)
                                         ->extraAttributes([
                                             'object-fit' => 'cover',
-                                            'loading'=> 'lazy',
+                                            'loading' => 'lazy',
                                         ]),
                                 ]),
                                 Group::make([
@@ -158,33 +172,59 @@ class BorrowRecordResource extends Resource
                             ])
                             ->columns(2),
                         Tabs\Tab::make('Book Detail')
-                            ->schema([
-                                Group::make([
-                                    Infolists\Components\ImageEntry::make('borrowRequest.book.cover')
-                                        ->label('Book Cover')
-                                        ->height(250)
-                                        ->extraImgAttributes([
-                                            'object-fit' => 'cover',
-                                            'loading'=> 'lazy',
-                                        ]),
-                                ]),
-                                Group::make([
-                                    Infolists\Components\TextEntry::make('borrowRequest.book.title')
-                                        ->label('Borrowed books'),
-                                    Infolists\Components\TextEntry::make('borrowRequest.quantity')
-                                        ->label('Total borrowed'),
-                                    Infolists\Components\TextEntry::make('borrow_at')
-                                        ->label('Borrow at'),
-                                    Infolists\Components\TextEntry::make('return_at')
-                                        ->label('Return at')
-                                        ->state(fn($record) => $record->return_at ??= 'Waiting for return')
-                                        ->badge()
-                                        ->color(fn($record) => $record->return_at === 'Waiting for return' ? 'warning' : 'gray')
-                                        ->icon(fn($state) => $state === 'Waiting for return' ? 'heroicon-o-clock' : 'heroicon-o-check-circle'),
-                                    Infolists\Components\TextEntry::make('due_date')
-                                        ->label('Due date'),
-                                ]),
-                            ])
+                            ->schema(function ($record) {
+                                $borrowId = $record->borrow_request_id;
+
+                                $books = BorrowRequestBooks::where('borrow_request_id', $borrowId)->select('book_id', 'quantity')->get()->flatMap(function ($book) {
+                                    $data = Book::where('id', $book->book_id)->select('title', 'author', 'publisher', 'cover')->get()->map(function ($item) use ($book) {
+                                        $item->quantity = $book->quantity;
+                                        return $item;
+                                    });
+                                    return $data;
+                                });
+
+                                return $books->map(function ($item) {
+                                    return Section::make($item->title)
+                                        ->schema([
+                                            Group::make([
+                                                ImageEntry::make('cover')
+                                                    ->label('Cover')
+                                                    ->state($item->cover),
+                                            ]),
+                                            Group::make([
+                                                TextEntry::make('title')
+                                                    ->label('Title')
+                                                    ->state($item->title),
+                                                TextEntry::make('author')
+                                                    ->label('Author')
+                                                    ->state($item->author),
+                                                TextEntry::make('publisher')
+                                                    ->label('Publisher')
+                                                    ->state($item->publisher),
+                                                TextEntry::make('quantity')
+                                                    ->label('Borrow amount')
+                                                    ->state($item->quantity),
+                                                TextEntry::make('borrow_at')
+                                                    ->label('Borrow at'),
+                                                TextEntry::make('return_at')
+                                                    ->label('Return at'),
+                                                TextEntry::make('due_date')
+                                                    ->label('Due date'),
+                                                TextEntry::make('status')
+                                                    ->label('Status')
+                                                    ->badge()
+                                                    ->color(fn($record) => match ($record->status) {
+                                                        'borrowed' => 'warning',
+                                                        'overdue' => 'danger',
+                                                        'returned' => 'success',
+                                                    }),
+                                            ])
+                                                ->columns(2)
+
+                                        ])
+                                        ->columns(2);
+                                })->toArray();
+                            })
                             ->columns(2),
                     ])
             ]);
