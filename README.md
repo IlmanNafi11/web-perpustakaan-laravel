@@ -1,23 +1,23 @@
 # Laravel Project - Perpustakaan
 
-Ini adalah aplikasi berbasis Laravel yang dirancang untuk mempermudah administrator dalam mengelola data perpustakaan. Proyek ini menyediakan fitur-fitur yang berguna untuk mengelola data data penting seperti, buku fisik dan digital(E-Book), admin, member, transaksi peminjaman, history peminjaman dan laporan dalam bentuk statistik diagram. 
+Ini adalah aplikasi berbasis Laravel yang dirancang untuk mempermudah administrator dalam mengelola data perpustakaan. Proyek ini menyediakan fitur-fitur yang berguna untuk mengelola data data penting seperti, buku fisik dan digital(E-Book), admin, member, transaksi peminjaman, history peminjaman dan laporan dalam bentuk statistik diagram.
 
 ## Fitur Aplikasi
 
-- **Autentikasi Pengguna:** Pengguna(admin) dapat login, dan mengelola akun mereka.
-- **Manajemen Data:** Menyediakan fitur untuk menambah, mengedit, dan menghapus data dalam aplikasi.
-- **Dashboard Interaktif:** Tampilan yang bersih dan mudah digunakan untuk mengakses semua fitur penting.
-- **Notifikasi Real-Time:** Memberikan notifikasi kepada pengguna saat terjadi perubahan atau pembaruan.
-- **Keamanan:** Menggunakan enkripsi dan perlindungan terhadap serangan umum seperti CSRF dan XSS.
+-   **Autentikasi Pengguna:** Pengguna(admin) dapat login, dan mengelola akun mereka.
+-   **Manajemen Data:** Menyediakan fitur untuk menambah, mengedit, dan menghapus data dalam aplikasi.
+-   **Dashboard Interaktif:** Tampilan yang bersih dan mudah digunakan untuk mengakses semua fitur penting.
+-   **Notifikasi Real-Time:** Memberikan notifikasi kepada pengguna saat terjadi perubahan atau pembaruan.
+-   **Keamanan:** Menggunakan enkripsi dan perlindungan terhadap serangan umum seperti CSRF dan XSS.
 
 ## Prasyarat
 
 Sebelum melanjutkan ke instalasi, pastikan Anda memiliki perangkat lunak berikut:
 
-- PHP >= 8.0
-- Composer
-- MySQL atau database lain yang kompatibel dengan Laravel
-- Web server seperti Apache atau Nginx
+-   PHP >= 8.0
+-   Composer
+-   MySQL atau database lain yang kompatibel dengan Laravel
+-   Web server seperti Apache atau Nginx
 
 ## Langkah-langkah Instalasi
 
@@ -28,7 +28,7 @@ Ikuti langkah-langkah berikut untuk menginstal dan menjalankan aplikasi Laravel 
 Pertama, clone repository ini ke dalam direktori lokal Anda:
 
 ```bash
-git clone https://github.com/username/repository-name.git
+git clone https://github.com/IlmanNafi11/web-perpustakaan-laravel.git
 cd repository-name
 ```
 
@@ -58,11 +58,11 @@ Jalankan perintah untuk menghasilkan key aplikasi:
 php artisan key:generate
 ```
 
-### 5. Import Database 
+### 5. Import Database
 
 Unduh file SQL database dari link berikut :
 
-[Unduh Database SQL](ttps://example.com/dokumen.pdf)
+[Unduh Database SQL](https://github.com/IlmanNafi11/web-perpustakaan-laravel/blob/638e51aff14ca5c887c2d9589967874f8cb24e70/database/perpustakaan.sql)
 
 Import file SQL ke dalam database MySQL anda menggunakan phpMyAdmin.
 
@@ -86,11 +86,11 @@ Aplikasi akan berjalan di `http://127.0.0.1:8000`
 
 ## Teknologi yang Digunakan
 
-- **Laravel 11.x**
-- **PHP 8.3**
-- **MySQL**
-- **Filament**
-- **Filament-Shield**
+-   **Laravel 11.x**
+-   **PHP 8.3**
+-   **MySQL**
+-   **Filament**
+-   **Filament-Shield**
 
 ## Kontribusi
 
