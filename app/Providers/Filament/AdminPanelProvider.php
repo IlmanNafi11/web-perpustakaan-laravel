@@ -14,6 +14,7 @@ use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Filament\Http\Middleware\AuthenticateSession;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -64,8 +65,11 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-user')
                     ->label('My Profile'),
             ])
-            ->brandName('Perpusdig')
+            ->brandName('Library')
             ->favicon(asset('storage/images/logos.svg'))
-            ->maxContentWidth(MaxWidth::Full);;
+            ->maxContentWidth(MaxWidth::Full)
+            ->plugins([
+                FilamentShieldPlugin::make(),
+            ]);
     }
 }
