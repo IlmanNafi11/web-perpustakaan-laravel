@@ -34,7 +34,7 @@ class AdminResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', 'admin');
+        return parent::getEloquentQuery()->where('role', 3);
     }
 
     public static function form(Form $form): Form
@@ -79,7 +79,7 @@ class AdminResource extends Resource
                     ->password()
                     ->revealable()
                     ->minLength(8),
-                Select::make('roles')
+                Select::make('role')
                 ->label('Role')
                 ->relationship('roles', 'name')
                 ->searchable()

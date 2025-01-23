@@ -13,10 +13,10 @@ class CreateAdmin extends CreateRecord
 
     protected function getCreatedNotification(): ?Notification
     {
-    return Notification::make()
-        ->success()
-        ->icon("heroicon-o-check-circle")
-        ->title('Succeed')
-        ->body('Admin added successfully');
+        return Notification::make()
+            ->success()
+            ->icon("heroicon-o-check-circle")
+            ->title('Succeed')
+            ->body('Admin added successfully');
     }
 }
