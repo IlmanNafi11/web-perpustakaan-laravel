@@ -6,9 +6,11 @@ use App\Filament\Resources\AdminResource\Pages;
 use App\Filament\Resources\AdminResource\RelationManagers;
 use App\Models\User;
 use App\Rules\UserRule;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -77,6 +79,10 @@ class AdminResource extends Resource
                     ->password()
                     ->revealable()
                     ->minLength(8),
+                Select::make('roles')
+                ->label('Role')
+                ->relationship('roles', 'name')
+                ->searchable()
             ]);
     }
 
